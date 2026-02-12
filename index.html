@@ -6,62 +6,80 @@
     <title>Resistor Calculator by @Kittisak (Vich)</title>
     <style>
         :root { --main-bg: #2c3e50; --resistor-bg: #d2b48c; --accent: #e67e22; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #ecf0f1; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #ecf0f1; margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; align-items: center; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
         h2 { color: var(--main-bg); margin-bottom: 5px; }
         .credit { font-size: 14px; color: #34495e; margin-bottom: 20px; font-weight: bold; background: #fdf2e9; padding: 5px 10px; border-radius: 10px; display: inline-block; }
         
-        /* สลับโหมด */
-        .mode-selector { margin-bottom: 20px; display: flex; justify-content: center; gap: 10px; }
-        .mode-btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; background: #bdc3c7; color: white; transition: 0.3s; }
-        .mode-btn.active { background: var(--accent); }
+        /* หน้าเลือกโหมด */
+        .mode-screen { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .big-btn { padding: 20px; font-size: 18px; font-weight: bold; cursor: pointer; border: none; border-radius: 15px; color: white; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn-4 { background: #3498db; }
+        .btn-5 { background: #9b59b6; }
+        .big-btn:hover { opacity: 0.9; transform: translateY(-2px); }
 
-        /* ตัวต้านทาน */
-        .resistor-container { background: #fff; padding: 40px 10px; border-radius: 15px; margin-bottom: 20px; position: relative; border: 1px dashed #ccc; }
+        /* ส่วนคำนวณ */
+        .calc-screen { display: none; }
+        .back-btn { background: #95a5a6; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; float: left; margin-bottom: 10px; }
+        
+        .resistor-container { background: #fff; padding: 40px 10px; border-radius: 15px; margin: 20px 0; position: relative; border: 1px dashed #ccc; }
         .resistor-line { width: 100%; height: 8px; background: #95a5a6; position: absolute; top: 50%; left: 0; transform: translateY(-50%); z-index: 1; }
         .resistor-body { width: 240px; height: 70px; background: var(--resistor-bg); margin: 0 auto; border-radius: 20px; position: relative; z-index: 2; border: 2px solid #333; display: flex; justify-content: space-around; align-items: center; padding: 0 10px; }
-        .band { width: 12px; height: 70px; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); }
+        .band { width: 12px; height: 70px; }
         
-        .result-box { background: var(--main-bg); color: #fff; padding: 15px; border-radius: 10px; font-size: 26px; font-weight: bold; margin-bottom: 20px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .result-box { background: var(--main-bg); color: #fff; padding: 15px; border-radius: 10px; font-size: 24px; font-weight: bold; margin-bottom: 20px; line-height: 1.4; }
+        .watt-tag { color: #f1c40f; font-size: 20px; display: block; }
+
         .controls { display: grid; grid-template-columns: 1fr; gap: 8px; text-align: left; }
         .control-group { display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 8px; border-radius: 8px; }
-        select { padding: 6px; border-radius: 5px; width: 55%; border: 1px solid #bdc3c7; }
-        .hidden { display: none; }
+        select { padding: 6px; border-radius: 5px; width: 55%; border: 1px solid #bdc3c7; font-size: 14px; }
+        
+        .size-info { font-size: 11px; color: #7f8c8d; margin-top: 15px; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>เครื่องคำนวณค่าสี</h2>
-    <div class="credit">วิทยาทานโดย@Kittisak (Vich)</div>
-
-    <div class="mode-selector">
-        <button id="btn4" class="mode-btn active" onclick="setMode(4)">4 แถบสี</button>
-        <button id="btn5" class="mode-btn" onclick="setMode(5)">5 แถบสี</button>
+    <div id="mode-screen" class="mode-screen">
+        <h2>เครื่องคำนวณค่าสี R</h2>
+        <div class="credit">วิทยาทานโดย @Kittisak (Vich)</div>
+        <button class="big-btn btn-4" onclick="showCalc(4)">แบบ 4 แถบสี</button>
+        <button class="big-btn btn-5" onclick="showCalc(5)">แบบ 5 แถบสี</button>
+        <p style="font-size: 11px; color: #7f8c8d;">พัฒนาขึ้นเพื่อช่างอิเล็กทรอนิกส์ไทย</p>
     </div>
 
-    <div class="resistor-container">
-        <div class="resistor-line"></div>
-        <div class="resistor-body">
-            <div id="b1" class="band"></div>
-            <div id="b2" class="band"></div>
-            <div id="b3" class="band"></div>
-            <div id="b4" class="band"></div>
-            <div id="b5" class="band"></div>
+    <div id="calc-screen" class="calc-screen">
+        <button class="back-btn" onclick="showMode()">⬅ กลับ</button>
+        <h2 id="title-text">คำนวณ 4 แถบสี</h2>
+        
+        <div class="resistor-container">
+            <div class="resistor-line"></div>
+            <div id="res-body" class="resistor-body"></div>
         </div>
-    </div>
 
-    <div id="res-val" class="result-box">0 Ω</div>
+        <div id="res-val" class="result-box">
+            <span id="ohm-text">0 Ω</span>
+            <span id="watt-text" class="watt-tag">(1/4W)</span>
+        </div>
 
-    <div class="controls">
-        <div class="control-group">แถบที่ 1: <select id="s1" onchange="calc()"></select></div>
-        <div class="control-group">แถบที่ 2: <select id="s2" onchange="calc()"></select></div>
-        <div id="row-s3" class="control-group hidden">แถบที่ 3: <select id="s3" onchange="calc()"></select></div>
-        <div class="control-group">ตัวคูณ: <select id="s-mul" onchange="calc()"></select></div>
-        <div class="control-group">ความคลาดเคลื่อน: <select id="s-tol" onchange="calc()"></select></div>
+        <div class="controls">
+            <div id="controls-bands"></div>
+            <div class="control-group" style="background: #e8f6f3; border: 1px solid #1abc9c;">
+                ประมาณขนาด: 
+                <select id="s-watt" onchange="calc()">
+                    <option value="1/8W">1/8W (ตัวเล็กจิ๋ว)</option>
+                    <option value="1/4W" selected>1/4W (ขนาดทั่วไป)</option>
+                    <option value="1/2W">1/2W (ขนาดกลาง)</option>
+                    <option value="1W">1W (ตัวใหญ่)</option>
+                    <option value="2W">2W (R ฟิวส์/R ภาคจ่ายไฟ)</option>
+                    <option value="5W">5W (ตัวสี่เหลี่ยมขาว)</option>
+                </select>
+            </div>
+        </div>
+        
+        <p class="size-info">* หมายเหตุ: ขนาดวัตต์ดูจากขนาดตัว ไม่ได้ดูจากแถบสี</p>
+        <p style="font-size: 10px; color: #ccc; margin-top: 10px;">Vich Project Code - Update Wattage Feature</p>
     </div>
-    
-    <p style="font-size: 10px; color: #ccc; margin-top: 20px;">Designed by Napa for @Kittisak's Workshop</p>
 </div>
 
 <script>
@@ -74,63 +92,87 @@
         "ทอง": {v:null, m:0.1, c:"#ffd700", t:"5%"}, "เงิน": {v:null, m:0.01, c:"#c0c0c0", t:"10%"}
     };
 
-    let currentMode = 4;
+    let activeMode = 4;
 
-    function init() {
-        const selects = ['s1', 's2', 's3', 's-mul', 's-tol'];
-        selects.forEach(id => {
+    function showCalc(mode) {
+        activeMode = mode;
+        document.getElementById('mode-screen').style.display = 'none';
+        document.getElementById('calc-screen').style.display = 'block';
+        document.getElementById('title-text').innerText = `คำนวณ ${mode} แถบสี`;
+        buildUI();
+        calc();
+    }
+
+    function showMode() {
+        document.getElementById('mode-screen').style.display = 'flex';
+        document.getElementById('calc-screen').style.display = 'none';
+    }
+
+    function buildUI() {
+        const body = document.getElementById('res-body');
+        const ctrlBands = document.getElementById('controls-bands');
+        body.innerHTML = '';
+        ctrlBands.innerHTML = '';
+
+        const bands = activeMode === 4 ? ['s1','s2','sm','st'] : ['s1','s2','s3','sm','st'];
+        const labels = activeMode === 4 ? ['แถบ 1','แถบ 2','ตัวคูณ','คลาดเคลื่อน'] : ['แถบ 1','แถบ 2','แถบ 3','ตัวคูณ','คลาดเคลื่อน'];
+
+        bands.forEach((id, index) => {
+            let b = document.createElement('div');
+            b.id = 'b' + id;
+            b.className = 'band';
+            body.appendChild(b);
+
+            let div = document.createElement('div');
+            div.className = 'control-group';
+            div.innerHTML = `${labels[index]}: <select id="${id}" onchange="calc()"></select>`;
+            ctrlBands.appendChild(div);
+
             let s = document.getElementById(id);
             for(let k in data) {
-                if((id==='s1'||id==='s2'||id==='s3') && data[k].v === null) continue;
-                if(id==='s-mul' && data[k].m === null) continue;
-                if(id==='s-tol' && data[k].t === null) continue;
+                if(id.startsWith('s') && id !== 'sm' && id !== 'st' && data[k].v === null) continue;
+                if(id === 'sm' && data[k].m === null) continue;
+                if(id === 'st' && data[k].t === null) continue;
                 let o = document.createElement('option'); o.text = k; s.add(o);
             }
         });
-        resetValues();
-    }
 
-    function resetValues() {
         document.getElementById('s1').value = "น้ำตาล";
         document.getElementById('s2').value = "ดำ";
-        document.getElementById('s3').value = "ดำ";
-        document.getElementById('s-mul').value = "แดง";
-        document.getElementById('s-tol').value = "ทอง";
-        calc();
-    }
-
-    function setMode(m) {
-        currentMode = m;
-        document.getElementById('btn4').classList.toggle('active', m === 4);
-        document.getElementById('btn5').classList.toggle('active', m === 5);
-        document.getElementById('row-s3').classList.toggle('hidden', m === 4);
-        document.getElementById('b3').classList.toggle('hidden', m === 4);
-        calc();
+        if(activeMode === 5) document.getElementById('s3').value = "ดำ";
+        document.getElementById('sm').value = "แดง";
+        document.getElementById('st').value = "ทอง";
     }
 
     function calc() {
-        let v1 = data[document.getElementById('s1').value].v;
-        let v2 = data[document.getElementById('s2').value].v;
-        let v3 = data[document.getElementById('s3').value].v;
-        let m = data[document.getElementById('s-mul').value].m;
-        let t = data[document.getElementById('s-tol').value].t;
+        const v1 = data[document.getElementById('s1').value].v;
+        const v2 = data[document.getElementById('s2').value].v;
+        const m = data[document.getElementById('sm').value].m;
+        const t = data[document.getElementById('st').value].t;
+        const w = document.getElementById('s-watt').value;
         
-        document.getElementById('b1').style.background = data[document.getElementById('s1').value].c;
-        document.getElementById('b2').style.background = data[document.getElementById('s2').value].c;
-        document.getElementById('b3').style.background = data[document.getElementById('s3').value].c;
-        document.getElementById('b4').style.background = data[document.getElementById('s-mul').value].c;
-        document.getElementById('b5').style.background = data[document.getElementById('s-tol').value].c;
+        document.getElementById('bs1').style.background = data[document.getElementById('s1').value].c;
+        document.getElementById('bs2').style.background = data[document.getElementById('s2').value].c;
+        document.getElementById('bsm').style.background = data[document.getElementById('sm').value].c;
+        document.getElementById('bst').style.background = data[document.getElementById('st').value].c;
 
-        let totalV = (currentMode === 4) ? (v1 * 10 + v2) : (v1 * 100 + v2 * 10 + v3);
+        let totalV;
+        if(activeMode === 4) {
+            totalV = v1 * 10 + v2;
+        } else {
+            const v3 = data[document.getElementById('s3').value].v;
+            document.getElementById('bs3').style.background = data[document.getElementById('s3').value].c;
+            totalV = v1 * 100 + v2 * 10 + v3;
+        }
+
         let val = totalV * m;
-        
         let unit = " Ω";
         if(val >= 1000000) { val /= 1000000; unit = " MΩ"; }
         else if(val >= 1000) { val /= 1000; unit = " KΩ"; }
         
-        document.getElementById('res-val').innerText = parseFloat(val.toFixed(2)) + unit + " ± " + t;
+        document.getElementById('ohm-text').innerText = parseFloat(val.toFixed(2)) + unit + " ± " + t;
+        document.getElementById('watt-text').innerText = " ขนาด: " + w;
     }
-    init();
 </script>
 </body>
 </html>
