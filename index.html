@@ -3,24 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resistor Calculator by Vich</title>
+    <title>Resistor Calculator by @Kittisak (Vich)</title>
     <style>
-        :root { --main-bg: #2c3e50; --resistor-bg: #d2b48c; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ecf0f1; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        :root { --main-bg: #2c3e50; --resistor-bg: #d2b48c; --accent: #e67e22; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #ecf0f1; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
         h2 { color: var(--main-bg); margin-bottom: 5px; }
-        .credit { font-size: 12px; color: #7f8c8d; margin-bottom: 20px; }
+        .credit { font-size: 14px; color: #34495e; margin-bottom: 20px; font-weight: bold; background: #fdf2e9; padding: 5px 10px; border-radius: 10px; display: inline-block; }
         
-        /* วาดตัวต้านทาน */
-        .resistor-container { background: #eee; padding: 30px 10px; border-radius: 10px; margin-bottom: 20px; position: relative; }
-        .resistor-line { width: 100%; height: 6px; background: #bdc3c7; position: absolute; top: 50%; left: 0; transform: translateY(-50%); z-index: 1; }
-        .resistor-body { width: 200px; height: 60px; background: var(--resistor-bg); margin: 0 auto; border-radius: 15px; position: relative; z-index: 2; border: 2px solid #333; display: flex; justify-content: space-around; align-items: center; padding: 0 10px; }
-        .band { width: 15px; height: 60px; border-left: 1px solid rgba(0,0,0,0.1); border-right: 1px solid rgba(0,0,0,0.1); }
+        /* สลับโหมด */
+        .mode-selector { margin-bottom: 20px; display: flex; justify-content: center; gap: 10px; }
+        .mode-btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; background: #bdc3c7; color: white; transition: 0.3s; }
+        .mode-btn.active { background: var(--accent); }
+
+        /* ตัวต้านทาน */
+        .resistor-container { background: #fff; padding: 40px 10px; border-radius: 15px; margin-bottom: 20px; position: relative; border: 1px dashed #ccc; }
+        .resistor-line { width: 100%; height: 8px; background: #95a5a6; position: absolute; top: 50%; left: 0; transform: translateY(-50%); z-index: 1; }
+        .resistor-body { width: 240px; height: 70px; background: var(--resistor-bg); margin: 0 auto; border-radius: 20px; position: relative; z-index: 2; border: 2px solid #333; display: flex; justify-content: space-around; align-items: center; padding: 0 10px; }
+        .band { width: 12px; height: 70px; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); }
         
-        .result-box { background: var(--main-bg); color: #fff; padding: 15px; border-radius: 10px; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
-        .controls { display: grid; grid-template-columns: 1fr; gap: 10px; text-align: left; }
-        .control-group { display: flex; justify-content: space-between; align-items: center; }
-        select { padding: 8px; border-radius: 5px; width: 60%; border: 1px solid #bdc3c7; }
+        .result-box { background: var(--main-bg); color: #fff; padding: 15px; border-radius: 10px; font-size: 26px; font-weight: bold; margin-bottom: 20px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .controls { display: grid; grid-template-columns: 1fr; gap: 8px; text-align: left; }
+        .control-group { display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 8px; border-radius: 8px; }
+        select { padding: 6px; border-radius: 5px; width: 55%; border: 1px solid #bdc3c7; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -29,6 +35,11 @@
     <h2>เครื่องคำนวณค่าสี</h2>
     <div class="credit">วิทยาทานโดย@Kittisak (Vich)</div>
 
+    <div class="mode-selector">
+        <button id="btn4" class="mode-btn active" onclick="setMode(4)">4 แถบสี</button>
+        <button id="btn5" class="mode-btn" onclick="setMode(5)">5 แถบสี</button>
+    </div>
+
     <div class="resistor-container">
         <div class="resistor-line"></div>
         <div class="resistor-body">
@@ -36,6 +47,7 @@
             <div id="b2" class="band"></div>
             <div id="b3" class="band"></div>
             <div id="b4" class="band"></div>
+            <div id="b5" class="band"></div>
         </div>
     </div>
 
@@ -44,11 +56,12 @@
     <div class="controls">
         <div class="control-group">แถบที่ 1: <select id="s1" onchange="calc()"></select></div>
         <div class="control-group">แถบที่ 2: <select id="s2" onchange="calc()"></select></div>
-        <div class="control-group">ตัวคูณ: <select id="s3" onchange="calc()"></select></div>
-        <div class="control-group">ความคลาดเคลื่อน: <select id="s4" onchange="calc()"></select></div>
+        <div id="row-s3" class="control-group hidden">แถบที่ 3: <select id="s3" onchange="calc()"></select></div>
+        <div class="control-group">ตัวคูณ: <select id="s-mul" onchange="calc()"></select></div>
+        <div class="control-group">ความคลาดเคลื่อน: <select id="s-tol" onchange="calc()"></select></div>
     </div>
     
-    <p style="font-size: 10px; color: #ccc; margin-top: 20px;">Code Secured & Verified for Vich's Charity Project</p>
+    <p style="font-size: 10px; color: #ccc; margin-top: 20px;">Designed by Napa AI for @Kittisak's Workshop</p>
 </div>
 
 <script>
@@ -61,34 +74,56 @@
         "ทอง": {v:null, m:0.1, c:"#ffd700", t:"5%"}, "เงิน": {v:null, m:0.01, c:"#c0c0c0", t:"10%"}
     };
 
+    let currentMode = 4;
+
     function init() {
-        for(let i=1; i<=4; i++) {
-            let s = document.getElementById('s'+i);
+        const selects = ['s1', 's2', 's3', 's-mul', 's-tol'];
+        selects.forEach(id => {
+            let s = document.getElementById(id);
             for(let k in data) {
-                if(i < 3 && data[k].v === null) continue;
-                if(i === 3 && data[k].m === null) continue;
-                if(i === 4 && data[k].t === null) continue;
+                if((id==='s1'||id==='s2'||id==='s3') && data[k].v === null) continue;
+                if(id==='s-mul' && data[k].m === null) continue;
+                if(id==='s-tol' && data[k].t === null) continue;
                 let o = document.createElement('option'); o.text = k; s.add(o);
             }
-        }
+        });
+        resetValues();
+    }
+
+    function resetValues() {
         document.getElementById('s1').value = "น้ำตาล";
         document.getElementById('s2').value = "ดำ";
-        document.getElementById('s3').value = "แดง";
-        document.getElementById('s4').value = "ทอง";
+        document.getElementById('s3').value = "ดำ";
+        document.getElementById('s-mul').value = "แดง";
+        document.getElementById('s-tol').value = "ทอง";
+        calc();
+    }
+
+    function setMode(m) {
+        currentMode = m;
+        document.getElementById('btn4').classList.toggle('active', m === 4);
+        document.getElementById('btn5').classList.toggle('active', m === 5);
+        document.getElementById('row-s3').classList.toggle('hidden', m === 4);
+        document.getElementById('b3').classList.toggle('hidden', m === 4);
         calc();
     }
 
     function calc() {
         let v1 = data[document.getElementById('s1').value].v;
         let v2 = data[document.getElementById('s2').value].v;
-        let m = data[document.getElementById('s3').value].m;
-        let t = data[document.getElementById('s4').value].t;
+        let v3 = data[document.getElementById('s3').value].v;
+        let m = data[document.getElementById('s-mul').value].m;
+        let t = data[document.getElementById('s-tol').value].t;
         
-        for(let i=1; i<=4; i++) {
-            document.getElementById('b'+i).style.background = data[document.getElementById('s'+i).value].c;
-        }
+        document.getElementById('b1').style.background = data[document.getElementById('s1').value].c;
+        document.getElementById('b2').style.background = data[document.getElementById('s2').value].c;
+        document.getElementById('b3').style.background = data[document.getElementById('s3').value].c;
+        document.getElementById('b4').style.background = data[document.getElementById('s-mul').value].c;
+        document.getElementById('b5').style.background = data[document.getElementById('s-tol').value].c;
 
-        let val = (v1 * 10 + v2) * m;
+        let totalV = (currentMode === 4) ? (v1 * 10 + v2) : (v1 * 100 + v2 * 10 + v3);
+        let val = totalV * m;
+        
         let unit = " Ω";
         if(val >= 1000000) { val /= 1000000; unit = " MΩ"; }
         else if(val >= 1000) { val /= 1000; unit = " KΩ"; }
