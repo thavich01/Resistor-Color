@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resistor Calculator by Vich</title>
+    <style>
+        :root { --main-bg: #2c3e50; --resistor-bg: #d2b48c; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ecf0f1; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h2 { color: var(--main-bg); margin-bottom: 5px; }
+        .credit { font-size: 12px; color: #7f8c8d; margin-bottom: 20px; }
+        
+        /* วาดตัวต้านทาน */
+        .resistor-container { background: #eee; padding: 30px 10px; border-radius: 10px; margin-bottom: 20px; position: relative; }
+        .resistor-line { width: 100%; height: 6px; background: #bdc3c7; position: absolute; top: 50%; left: 0; transform: translateY(-50%); z-index: 1; }
+        .resistor-body { width: 200px; height: 60px; background: var(--resistor-bg); margin: 0 auto; border-radius: 15px; position: relative; z-index: 2; border: 2px solid #333; display: flex; justify-content: space-around; align-items: center; padding: 0 10px; }
+        .band { width: 15px; height: 60px; border-left: 1px solid rgba(0,0,0,0.1); border-right: 1px solid rgba(0,0,0,0.1); }
+        
+        .result-box { background: var(--main-bg); color: #fff; padding: 15px; border-radius: 10px; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+        .controls { display: grid; grid-template-columns: 1fr; gap: 10px; text-align: left; }
+        .control-group { display: flex; justify-content: space-between; align-items: center; }
+        select { padding: 8px; border-radius: 5px; width: 60%; border: 1px solid #bdc3c7; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>เครื่องคำนวณค่าสี</h2>
+    <div class="credit">วิทยาทานโดย@Kittisak (Vich)</div>
+
+    <div class="resistor-container">
+        <div class="resistor-line"></div>
+        <div class="resistor-body">
+            <div id="b1" class="band"></div>
+            <div id="b2" class="band"></div>
+            <div id="b3" class="band"></div>
+            <div id="b4" class="band"></div>
+        </div>
+    </div>
+
+    <div id="res-val" class="result-box">0 Ω</div>
+
+    <div class="controls">
+        <div class="control-group">แถบที่ 1: <select id="s1" onchange="calc()"></select></div>
+        <div class="control-group">แถบที่ 2: <select id="s2" onchange="calc()"></select></div>
+        <div class="control-group">ตัวคูณ: <select id="s3" onchange="calc()"></select></div>
+        <div class="control-group">ความคลาดเคลื่อน: <select id="s4" onchange="calc()"></select></div>
+    </div>
+    
+    <p style="font-size: 10px; color: #ccc; margin-top: 20px;">Code Secured & Verified for Vich's Charity Project</p>
+</div>
+
+<script>
+    const data = {
+        "ดำ": {v:0, m:1, c:"#000", t:null}, "น้ำตาล": {v:1, m:10, c:"#8B4513", t:"1%"},
+        "แดง": {v:2, m:100, c:"#ff0000", t:"2%"}, "ส้ม": {v:3, m:1000, c:"#ff8c00", t:null},
+        "เหลือง": {v:4, m:10000, c:"#ffff00", t:null}, "เขียว": {v:5, m:100000, c:"#008000", t:"0.5%"},
+        "น้ำเงิน": {v:6, m:1000000, c:"#0000ff", t:"0.25%"}, "ม่วง": {v:7, m:10000000, c:"#8b00ff", t:"0.1%"},
+        "เทา": {v:8, m:null, c:"#808080", t:"0.05%"}, "ขาว": {v:9, m:null, c:"#ffffff", t:null},
+        "ทอง": {v:null, m:0.1, c:"#ffd700", t:"5%"}, "เงิน": {v:null, m:0.01, c:"#c0c0c0", t:"10%"}
+    };
+
+    function init() {
+        for(let i=1; i<=4; i++) {
+            let s = document.getElementById('s'+i);
+            for(let k in data) {
+                if(i < 3 && data[k].v === null) continue;
+                if(i === 3 && data[k].m === null) continue;
+                if(i === 4 && data[k].t === null) continue;
+                let o = document.createElement('option'); o.text = k; s.add(o);
+            }
+        }
+        document.getElementById('s1').value = "น้ำตาล";
+        document.getElementById('s2').value = "ดำ";
+        document.getElementById('s3').value = "แดง";
+        document.getElementById('s4').value = "ทอง";
+        calc();
+    }
+
+    function calc() {
+        let v1 = data[document.getElementById('s1').value].v;
+        let v2 = data[document.getElementById('s2').value].v;
+        let m = data[document.getElementById('s3').value].m;
+        let t = data[document.getElementById('s4').value].t;
+        
+        for(let i=1; i<=4; i++) {
+            document.getElementById('b'+i).style.background = data[document.getElementById('s'+i).value].c;
+        }
+
+        let val = (v1 * 10 + v2) * m;
+        let unit = " Ω";
+        if(val >= 1000000) { val /= 1000000; unit = " MΩ"; }
+        else if(val >= 1000) { val /= 1000; unit = " KΩ"; }
+        
+        document.getElementById('res-val').innerText = parseFloat(val.toFixed(2)) + unit + " ± " + t;
+    }
+    init();
+</script>
+</body>
+</html>
