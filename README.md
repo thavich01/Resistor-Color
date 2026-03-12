@@ -47,3 +47,5 @@ How to Use:
         -Select colors matching the physical resistor bands, from the 1st to the 4th band.
         
         -The calculated value will be displayed immediately in the blue result box.
+
+[!ลิงค์เปิดใช้งาน](https://kittisak-vich.github.io/Resistor-Color/) 
